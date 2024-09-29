@@ -14,22 +14,7 @@ impl ClosestPair {
     }
 }
 
-pub fn closest_pair_index(points: &[Vec2<f32>]) -> Option<ClosestPair> {
-    if points.len() < 2 {
-        return None;
-    }
-    let mut closest_pair = ClosestPair::new(0, 1, distance(&points[0], &points[1]));
 
-    for x in 0..points.len() {
-        for y in (x + 1)..points.len() {
-            let current_distance = distance(&points[x], &points[y]);
-            if current_distance < closest_pair.distance {
-                closest_pair = ClosestPair::new(x, y, current_distance);
-            }
-        }
-    }
-    Some(closest_pair)
-}
 
 pub fn distance(a: &Vec2<f32>, b: &Vec2<f32>) -> f32 {
     ((a.x - b.x).powi(2) + (a.y - b.y).powi(2)).sqrt()
