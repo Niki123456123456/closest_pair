@@ -22,6 +22,7 @@ pub struct ClosestPair<'a> {
 }
 
 impl<'a> ClosestPair<'a> {
+    #[inline(always)]
     fn euclidean(point_a: &'a Point, point_b: &'a Point) -> Self {
         Self {
             point_a,
@@ -65,6 +66,7 @@ impl Point {
     }
 }
 
+#[inline(always)]
 pub fn euclidean_distance(point_a: &Point, point_b: &Point) -> f32 {
     ((point_a.x - point_b.x).powi(2) + (point_a.y - point_b.y).powi(2)).sqrt()
 }

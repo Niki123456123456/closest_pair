@@ -19,11 +19,10 @@ eframe = { version = "0.28", default-features = false, features = [
     "persistence",   # Enable restoring app state when restarting the app.
 ] }
 log = "0.4"
-
-# You only need serde if you want app persistence:
 serde = { version = "1", features = ["derive"] }
 rand = "0.8.5"
 getrandom = { version = "0.2", features = ["js"] }
+instant = "0.1"
 
 # native:
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

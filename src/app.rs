@@ -1,5 +1,3 @@
-use std::result;
-
 use egui::{vec2, Color32};
 
 use crate::twod::*;
@@ -35,7 +33,7 @@ fn generate_points(
     let mut results: Vec<AlgorithmResult> = vec![];
 
     for algorithm in algorithms.iter() {
-        let start = std::time::Instant::now();
+        let start = instant::Instant::now();
 
         let clostet_pair = algorithm.execute(&points);
 
@@ -91,7 +89,7 @@ impl eframe::App for App {
                 }
                 ui.allocate_at_least(vec2(size, size), egui::Sense::click());
     
-                slider(ui, &mut self.len, 10, 5000, true, "number of points");
+                slider(ui, &mut self.len, 2, 5000, true, "number of points");
                 if ui.button("regenerate").clicked() {
                     (self.points, self.results) = generate_points(&mut self.rng, self.len);
                 }
