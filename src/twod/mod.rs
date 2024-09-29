@@ -22,14 +22,6 @@ pub struct ClosestPair<'a> {
 }
 
 impl<'a> ClosestPair<'a> {
-    fn new(point_a: &'a Point, point_b: &'a Point, distance: f32) -> Self {
-        Self {
-            point_a,
-            point_b,
-            distance,
-        }
-    }
-
     fn euclidean(point_a: &'a Point, point_b: &'a Point) -> Self {
         Self {
             point_a,
