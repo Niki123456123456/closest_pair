@@ -16,6 +16,9 @@ impl ClosestPairAlgorithm for DivideAndConquer {
         let mut drawings = vec![];
         return drawings;
     }
+    fn limit(&self,) -> usize {
+        10_000_000
+     }
 }
 
 fn closest_pair_recursive<'a>(points_sorted_x: &[&'a Point]) -> ClosestPair<'a> {

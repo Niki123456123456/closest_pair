@@ -42,8 +42,7 @@ impl ClosestPairAlgorithm for GridAlgorithm {
         let mut closest_pair = ClosestPair::euclidean(&points[0], &points[1]);
         let mut grid = create_grid(&points[..=1], closest_pair.distance);
 
-        for (i, point) in points[2..].iter().enumerate() {
-            let i = i + 2;
+        for (i, point) in points.iter().enumerate().skip(2) {
             let key = CellKey::new(point, closest_pair.distance);
             let nearby_keys = key.nearbys();
             let current_pair = nearby_keys
@@ -72,8 +71,7 @@ impl ClosestPairAlgorithm for GridAlgorithm {
         let mut closest_pair = ClosestPair::euclidean(&points[0], &points[1]);
         let mut grid = create_grid(&points[..=1], closest_pair.distance);
 
-        for (i, point) in points[2..].iter().enumerate() {
-            let i = i + 2;
+        for (i, point) in points.iter().enumerate().skip(2) {
             let key = CellKey::new(point, closest_pair.distance);
             let nearby_keys = key.nearbys();
             let current_pair = nearby_keys
@@ -121,6 +119,10 @@ impl ClosestPairAlgorithm for GridAlgorithm {
         }
 
         return drawings;
+    }
+    
+    fn limit(&self,) -> usize {
+       10_000_000
     }
 }
 

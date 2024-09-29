@@ -5,12 +5,17 @@ use rand::Rng;
 mod brute_force;
 mod divide_and_conquer;
 mod grid;
+mod grid_const;
+mod sweep_line;
 
 pub use brute_force::BruteForce;
 pub use grid::GridAlgorithm;
+pub use grid_const::GridAlgorithmConst;
 pub use divide_and_conquer::DivideAndConquer;
+pub use sweep_line::SweepLine;
 
 pub trait ClosestPairAlgorithm {
+    fn limit(&self,) -> usize;
     fn name(&self,) -> &'static str;
     fn execute<'a>(&self, points: &'a[Point]) -> ClosestPair<'a>;
     fn drawings<'a>(&self, points: &'a[Point]) -> Vec<Vec<Drawing>>;
@@ -56,6 +61,16 @@ impl Ord for ClosestPair<'_> {
 pub struct Point {
     pub x: f32,
     pub y: f32,
+}
+
+impl Eq for Point {
+    
+}
+
+impl Ord for Point {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+       self.y.partial_cmp(&other.y).unwrap()
+    }
 }
 
 impl Point {

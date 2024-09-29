@@ -27,19 +27,32 @@ fn generate_points(
     for _ in 0..len {
         points.push(Point::ran(rng));
     }
-    let algorithms: Vec<Box<dyn ClosestPairAlgorithm>> =
-        vec![Box::new(BruteForce), Box::new(GridAlgorithm), Box::new(DivideAndConquer)];
+    let algorithms: Vec<Box<dyn ClosestPairAlgorithm>> = vec![
+        Box::new(BruteForce),
+        Box::new(DivideAndConquer),
+        Box::new(SweepLine),
+        Box::new(GridAlgorithm),
+        Box::new(GridAlgorithmConst),
+        
+    ];
 
     let mut results: Vec<AlgorithmResult> = vec![];
 
     for algorithm in algorithms.iter() {
+        if algorithm.limit() < len {
+            continue;
+        }
         let start = web_time::Instant::now();
 
         let clostet_pair = algorithm.execute(&points);
 
         let duration: std::time::Duration = start.elapsed();
 
-        let drawings = if len <= 200 { algorithm.drawings(&points) } else {vec![]};
+        let drawings = if len <= 200 {
+            algorithm.drawings(&points)
+        } else {
+            vec![]
+        };
         results.push(AlgorithmResult {
             name: algorithm.name(),
             point_a: clostet_pair.point_a.clone(),
@@ -70,14 +83,12 @@ impl Default for App {
 }
 
 impl App {
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(_: &eframe::CreationContext<'_>) -> Self {
         Default::default()
     }
-}
 
-impl eframe::App for App {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+    fn showpoints(&mut self, ui: &mut egui::Ui) {
+        if self.points.len() <= 2000 {
             let start_pos = ui.next_widget_position();
             let height = ui.available_height();
             let width = ui.available_width();
@@ -87,16 +98,30 @@ impl eframe::App for App {
                 ui.painter().circle_filled(pos, 1.0, Color32::WHITE);
             }
             ui.allocate_at_least(vec2(size, size), egui::Sense::click());
+        }
+    }
+}
 
-            slider(ui, &mut self.len, 2, 5000, true, "number of points");
+impl eframe::App for App {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            slider(ui, &mut self.len, 2, 10_000_000, true, "number of points");
+            self.showpoints(ui);
+
             if ui.button("regenerate").clicked() {
                 (self.points, self.results) = generate_points(&mut self.rng, self.len);
             }
 
             for result in self.results.iter() {
-                ui.label(format!("{}:", result.name));
+                ui.heading(format!("{}:", result.name));
                 ui.label(format!("distance: {}", result.distance));
-                ui.label(format!("took: {}ms", result.duration.as_micros()));
+                let duration_per_point =
+                    result.duration.as_micros() as f64 / self.points.len() as f64;
+                ui.label(format!(
+                    "took: {}ms {:.2}",
+                    result.duration.as_micros(),
+                    duration_per_point
+                ));
                 ui.label(format!(
                     "point_a: {} {}",
                     result.point_a.x, result.point_a.y

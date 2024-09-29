@@ -3,6 +3,9 @@ use super::*;
 pub struct BruteForce;
 
 impl ClosestPairAlgorithm for BruteForce {
+    fn limit(&self,) -> usize {
+        10_000
+     }
     fn name(&self) -> &'static str {
         "brute force"
     }
