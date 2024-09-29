@@ -33,7 +33,7 @@ fn generate_points(
     let mut results: Vec<AlgorithmResult> = vec![];
 
     for algorithm in algorithms.iter() {
-        let start = instant::Instant::now();
+        let start = web_time::Instant::now();
 
         let clostet_pair = algorithm.execute(&points);
 
