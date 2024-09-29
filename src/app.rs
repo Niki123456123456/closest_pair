@@ -28,7 +28,7 @@ fn generate_points(
         points.push(Point::ran(rng));
     }
     let algorithms: Vec<Box<dyn ClosestPairAlgorithm>> =
-        vec![Box::new(BruteForce), Box::new(GridAlgorithm)];
+        vec![Box::new(BruteForce), Box::new(GridAlgorithm), Box::new(DivideAndConquer)];
 
     let mut results: Vec<AlgorithmResult> = vec![];
 

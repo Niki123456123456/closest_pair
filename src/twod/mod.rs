@@ -8,6 +8,7 @@ mod grid;
 
 pub use brute_force::BruteForce;
 pub use grid::GridAlgorithm;
+pub use divide_and_conquer::DivideAndConquer;
 
 pub trait ClosestPairAlgorithm {
     fn name(&self,) -> &'static str;
@@ -51,7 +52,7 @@ impl Ord for ClosestPair<'_> {
         self.distance.partial_cmp(&other.distance).unwrap()
     }
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Point {
     pub x: f32,
     pub y: f32,
