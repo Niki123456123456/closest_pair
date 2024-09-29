@@ -78,7 +78,7 @@ impl ClosestPairAlgorithm for GridAlgorithmConst {
         return closest_pair;
     }
 
-    fn drawings<'a>(&self, points: &'a [Point]) -> Vec<Vec<Drawing>> {
+    fn drawings<'a>(&self, _points: &'a [Point]) -> Vec<Vec<Drawing>> {
         vec![]
     }
 

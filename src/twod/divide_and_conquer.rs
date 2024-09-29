@@ -13,13 +13,75 @@ impl ClosestPairAlgorithm for DivideAndConquer {
     }
 
     fn drawings<'a>(&self, points: &'a [Point]) -> Vec<Vec<Drawing>> {
-        let mut drawings = vec![];
-        return drawings;
+        let mut points_sorted_x: Vec<_> = points.iter().collect();
+        points_sorted_x.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
+        return closest_pair_recursive_draw(&points_sorted_x).1;
     }
     fn limit(&self,) -> usize {
         10_000_000
      }
 }
+
+fn closest_pair_recursive_draw<'a>(points_sorted_x: &[&'a Point]) -> (ClosestPair<'a>, Vec<Vec<Drawing>>) {
+    if points_sorted_x.len() == 2 {
+        return (ClosestPair::euclidean(&points_sorted_x[0], &points_sorted_x[1]), vec![]);
+    } else if points_sorted_x.len() == 3 {
+        return ([
+            ClosestPair::euclidean(&points_sorted_x[0], &points_sorted_x[1]),
+            ClosestPair::euclidean(&points_sorted_x[0], &points_sorted_x[2]),
+            ClosestPair::euclidean(&points_sorted_x[1], &points_sorted_x[2]),
+        ]
+        .into_iter()
+        .min()
+        .unwrap(), vec![]);
+    }
+
+    let mut drawings = vec![];
+    let mid = points_sorted_x.len() / 2;
+    let mid_point = points_sorted_x[mid];
+
+    let (left_x, right_x) = points_sorted_x.split_at(mid);
+
+    let (dl,mut left_drawings) = closest_pair_recursive_draw(left_x);
+    let (dr,mut right_drawings) = closest_pair_recursive_draw(right_x);
+
+    drawings.append(&mut left_drawings);
+    drawings.append(&mut right_drawings);
+    let mut current_drawing = vec![];
+    for &point in points_sorted_x {
+        current_drawing.push(Drawing::Point(point.clone(), Color32::WHITE));
+    }
+    current_drawing.push(Drawing::Line(
+        dl.point_a.clone(),
+        dl.point_b.clone(),
+        Color32::GREEN,
+    ));
+    current_drawing.push(Drawing::Line(
+        dr.point_a.clone(),
+        dr.point_b.clone(),
+        Color32::GREEN,
+    ));
+    current_drawing.push(Drawing::Line(
+        Point::new(mid_point.x, 0.0),
+        Point::new(mid_point.x, 1.0),
+        Color32::RED,
+    ));
+    drawings.push(current_drawing);
+
+    let d = dl.min(dr);
+    
+
+
+    let strip: Vec<_> = points_sorted_x
+        .iter()
+        .map(|x| *x)
+        .filter(|p| (p.x - mid_point.x).abs() < d.distance)
+        .collect();
+
+    let closest = strip_closest(&strip, d);
+    return (closest, drawings);
+}
+
 
 fn closest_pair_recursive<'a>(points_sorted_x: &[&'a Point]) -> ClosestPair<'a> {
     if points_sorted_x.len() == 2 {

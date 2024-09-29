@@ -17,6 +17,7 @@ pub struct App {
     points: Vec<Point>,
     results: Vec<AlgorithmResult>,
     len: usize,
+    dark_mode: bool,
 }
 
 fn generate_points(
@@ -33,7 +34,6 @@ fn generate_points(
         Box::new(SweepLine),
         Box::new(GridAlgorithm),
         Box::new(GridAlgorithmConst),
-        
     ];
 
     let mut results: Vec<AlgorithmResult> = vec![];
@@ -78,6 +78,7 @@ impl Default for App {
             points,
             results,
             len,
+            dark_mode: true,
         }
     }
 }
@@ -85,6 +86,13 @@ impl Default for App {
 impl App {
     pub fn new(_: &eframe::CreationContext<'_>) -> Self {
         Default::default()
+    }
+
+    fn color(&self) -> Color32 {
+        if self.dark_mode {
+            return Color32::WHITE;
+        }
+        return Color32::BLACK;
     }
 
     fn showpoints(&mut self, ui: &mut egui::Ui) {
@@ -95,7 +103,7 @@ impl App {
             let size = if height < width { height } else { width } * 0.25;
             for point in self.points.iter() {
                 let pos = start_pos + size * vec2(point.x, point.y);
-                ui.painter().circle_filled(pos, 1.0, Color32::WHITE);
+                ui.painter().circle_filled(pos, 1.0, self.color());
             }
             ui.allocate_at_least(vec2(size, size), egui::Sense::click());
         }
@@ -105,6 +113,16 @@ impl App {
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            if ui.button("Toggle Dark/Light Mode").clicked() {
+                self.dark_mode = !self.dark_mode;
+
+                if self.dark_mode {
+                    ctx.set_visuals(egui::Visuals::dark());
+                } else {
+                    ctx.set_visuals(egui::Visuals::light());
+                }
+            }
+
             slider(ui, &mut self.len, 2, 10_000_000, true, "number of points");
             self.showpoints(ui);
 
@@ -141,13 +159,13 @@ impl eframe::App for App {
                 let height = ui.available_height();
                 let width = ui.available_width();
                 let size = if height < width { height } else { width };
-                show_drawings(ui, result, size);
+                show_drawings(ui, result, size, self.dark_mode);
             });
         }
     }
 }
 
-fn show_drawings(ui: &mut egui::Ui, result: &mut AlgorithmResult, size: f32) {
+fn show_drawings(ui: &mut egui::Ui, result: &mut AlgorithmResult, size: f32, dark_mode : bool) {
     slider(
         ui,
         &mut result.drawing_step,
@@ -159,16 +177,25 @@ fn show_drawings(ui: &mut egui::Ui, result: &mut AlgorithmResult, size: f32) {
     let drawings = &result.drawings[result.drawing_step];
     let start_pos = ui.next_widget_position();
     for drawing in drawings.iter() {
+        
         match drawing {
             Drawing::Point(point, color32) => {
+                let mut color = *color32;
+                if color == Color32::WHITE && !dark_mode {
+                    color = Color32::BLACK;
+                }
                 let pos = start_pos + size * vec2(point.x, point.y);
-                ui.painter().circle_filled(pos, 1.0, *color32);
+                ui.painter().circle_filled(pos, 1.0, color);
             }
             Drawing::Line(point, point1, color32) => {
+                let mut color = *color32;
+                if color == Color32::WHITE && !dark_mode {
+                    color = Color32::BLACK;
+                }
                 let pos = start_pos + size * vec2(point.x, point.y);
                 let pos1 = start_pos + size * vec2(point1.x, point1.y);
                 ui.painter()
-                    .line_segment([pos, pos1], egui::epaint::PathStroke::new(0.5, *color32));
+                    .line_segment([pos, pos1], egui::epaint::PathStroke::new(0.5, color));
             }
         }
     }
