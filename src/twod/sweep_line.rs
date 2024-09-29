@@ -72,23 +72,18 @@ impl ClosestPairAlgorithm for SweepLine {
                 j += 1;
             }
 
+           
+           
+
+            let lower_bound = Point::new( f32::MIN, point.y - closest_pair.distance);
+            let upper_bound = Point::new( f32::MAX, point.y + closest_pair.distance);
+
             let mut current_drawing = vec![];
             current_drawing.push(Drawing::Line(
                 closest_pair.point_a.clone(),
                 closest_pair.point_b.clone(),
                 Color32::RED,
             ));
-
-            let lower_bound = Point::new( f32::MIN, point.y - closest_pair.distance);
-            let upper_bound = Point::new( f32::MAX, point.y + closest_pair.distance);
-            for point_b in set.range(lower_bound..=upper_bound) {
-                let current_pair = ClosestPair::euclidean(point, point_b);
-                if current_pair < closest_pair {
-                    closest_pair = current_pair;
-                }
-            }
-
-           
             current_drawing.push(Drawing::Line(
                 Point::new(point.x, 0.0),
                 Point::new(point.x, 1.0),
@@ -112,8 +107,15 @@ impl ClosestPairAlgorithm for SweepLine {
             for point in points.iter() {
                 current_drawing.push(Drawing::Point(point.clone(), Color32::WHITE));
             }
-           
             drawings.push(current_drawing);
+
+            for point_b in set.range(lower_bound..=upper_bound) {
+                let current_pair = ClosestPair::euclidean(point, point_b);
+                if current_pair < closest_pair {
+                    closest_pair = current_pair;
+                }
+            }
+            
            
 
             set.insert(point);
