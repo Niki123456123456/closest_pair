@@ -54,18 +54,29 @@ fn closest_pair_recursive_draw<'a>(points_sorted_x: &[&'a Point]) -> (ClosestPai
     current_drawing.push(Drawing::Line(
         dl.point_a.clone(),
         dl.point_b.clone(),
-        Color32::GREEN,
+        Color32::RED,
     ));
     current_drawing.push(Drawing::Line(
         dr.point_a.clone(),
         dr.point_b.clone(),
-        Color32::GREEN,
+        Color32::RED,
     ));
     current_drawing.push(Drawing::Line(
         Point::new(mid_point.x, 0.0),
         Point::new(mid_point.x, 1.0),
-        Color32::RED,
+        Color32::GREEN,
     ));
+    current_drawing.push(Drawing::Line(
+        Point::new(points_sorted_x[0].x, 0.0),
+        Point::new(points_sorted_x[0].x, 1.0),
+        Color32::GREEN,
+    ));
+    current_drawing.push(Drawing::Line(
+        Point::new(points_sorted_x[points_sorted_x.len()-1].x, 0.0),
+        Point::new(points_sorted_x[points_sorted_x.len()-1].x, 1.0),
+        Color32::GREEN,
+    ));
+
     drawings.push(current_drawing);
 
     let d = dl.min(dr);

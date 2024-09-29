@@ -136,7 +136,7 @@ impl eframe::App for App {
                 let duration_per_point =
                     result.duration.as_micros() as f64 / self.points.len() as f64;
                 ui.label(format!(
-                    "took: {}ms {:.2}",
+                    "took: {}ms {:.2}ms per point",
                     result.duration.as_micros(),
                     duration_per_point
                 ));
