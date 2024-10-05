@@ -31,6 +31,7 @@ fn generate_points(
     let algorithms: Vec<Box<dyn ClosestPairAlgorithm<f32>>> = vec![
         Box::new(BruteForce),
         Box::new(DivideAndConquer),
+        Box::new(DivideAndConquerPresortedY),
         Box::new(SweepLine),
         Box::new(GridAlgorithm),
         Box::new(GridAlgorithmConst),

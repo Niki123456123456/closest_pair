@@ -118,19 +118,19 @@ fn closest_pair_recursive<'a, T: Number>(points_sorted_x: &[&'a Point<T>]) -> Cl
     let mid = points_sorted_x.len() / 2;
     let mid_point = points_sorted_x[mid];
 
-    let (left_x, right_x) = points_sorted_x.split_at(mid);
+    let (left_points, right_points) = points_sorted_x.split_at(mid);
 
-    let dl = closest_pair_recursive(left_x);
-    let dr = closest_pair_recursive(right_x);
-    let d = dl.min(dr);
+    let left_pair = closest_pair_recursive(left_points);
+    let right_pair = closest_pair_recursive(right_points);
+    let closest_pair = left_pair.min(right_pair);
 
     let strip: Vec<_> = points_sorted_x
         .iter()
         .map(|x| *x)
-        .filter(|p| (p.x - mid_point.x).abs() < d.distance)
+        .filter(|p| (p.x - mid_point.x).abs() < closest_pair.distance)
         .collect();
 
-    return strip_closest(&strip, d);
+    return strip_closest(&strip, closest_pair);
 }
 
 fn strip_closest<'a, T: Number>(

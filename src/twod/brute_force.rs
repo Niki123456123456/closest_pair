@@ -7,7 +7,7 @@ impl<T: Number> ClosestPairAlgorithm<T> for BruteForce {
         "brute force"
     }
     fn limit(&self) -> usize {
-        usize::MAX //10_000
+        10_000
     }
     fn execute<'a>(&self, points: &'a [Point<T>]) -> ClosestPair<'a, T> {
         let mut closest_pair = ClosestPair::euclidean(&points[0], &points[1]);

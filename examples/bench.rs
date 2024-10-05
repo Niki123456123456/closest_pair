@@ -1,6 +1,5 @@
 use closest_pair::{
-    BruteForce, ClosestPairAlgorithm, DivideAndConquer, GridAlgorithmConst, Number, Point,
-    SweepLine,
+    BruteForce, ClosestPairAlgorithm, DivideAndConquer, DivideAndConquerPresortedY, GridAlgorithmConst, Number, Point, SweepLine
 };
 use rand::{distributions::Standard, prelude::Distribution};
 use std::{fmt::Debug, time::Duration};
@@ -20,13 +19,13 @@ fn main() {
     let mut rng = rand::thread_rng();
     //let sizes = vec![10, 100, 1000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000];
     let mut sizes: Vec<usize> = vec![4, 4];
-    for _ in 0..20_usize {
+    for _ in 0..18_usize {
         // 18 25 
         sizes.push(sizes.last().unwrap() * 2);
     }
     println!("{}", print_thousands(sizes.last().unwrap()));
-    //bench::<f64>(&sizes, 10, &mut rng);
-    bench::<f64>(&sizes, 1, &mut rng);
+    bench::<f64>(&sizes, 10, &mut rng);
+    //bench::<f64>(&sizes, 1, &mut rng);
 
 }
 
@@ -39,8 +38,9 @@ Standard: Distribution<T>, {
         let points = generate_points::<T>(*size, rng);
 
         let algorithms: Vec<Box<dyn ClosestPairAlgorithm<T>>> = vec![
-            Box::new(BruteForce),
-            //Box::new(DivideAndConquer),
+            //Box::new(BruteForce),
+            Box::new(DivideAndConquerPresortedY),
+            Box::new(DivideAndConquer),
             //Box::new(SweepLine),
             //Box::new(GridAlgorithmConst),
         ];

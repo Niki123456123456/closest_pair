@@ -5,12 +5,14 @@ use rand::{distributions::Standard, prelude::Distribution, Rng};
 
 mod brute_force;
 mod divide_and_conquer;
+mod divide_and_conquer_presortedy;
 mod grid;
 mod grid_const;
 mod sweep_line;
 
 pub use brute_force::BruteForce;
 pub use divide_and_conquer::DivideAndConquer;
+pub use divide_and_conquer_presortedy::DivideAndConquerPresortedY;
 pub use grid::GridAlgorithm;
 pub use grid_const::GridAlgorithmConst;
 pub use sweep_line::SweepLine;

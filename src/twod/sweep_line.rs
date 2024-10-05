@@ -35,7 +35,8 @@ impl<T: Number> ClosestPairAlgorithm<T> for SweepLine {
 
             let lower_bound = Point::new( T::MIN, point.y - closest_pair.distance);
             let upper_bound = Point::new( T::MAX, point.y + closest_pair.distance);
-            for point_b in set.range(lower_bound..=upper_bound) {
+            let range = set.range(lower_bound..=upper_bound);
+            for point_b in range {
                 let current_pair = ClosestPair::euclidean(point, point_b);
                 if current_pair < closest_pair {
                     closest_pair = current_pair;
