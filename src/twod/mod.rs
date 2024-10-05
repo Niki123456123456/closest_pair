@@ -103,6 +103,7 @@ pub trait Number: Add<Output = Self> + Sub<Output = Self> + Div<Output = Self> +
     fn abs(self) -> Self;
     fn floor(self) -> Self;
     fn as_i32(self) -> i32;
+    fn as_i64(self) -> i64;
     fn default_points() -> [&'static Point<Self>; 4];
 }
 
@@ -131,14 +132,50 @@ impl Number for f32 {
         self as i32
     }
     #[inline]
+    fn as_i64(self) -> i64 {
+        self as i64
+    }
+    #[inline]
     fn default_points() -> [&'static Point<Self>; 4] {
         [const { &Point { x: 0.0, y: 0.0 } }; 4]
     }
-    
-    
-
-   
 }
+
+impl Number for f64 {
+    const MIN: f64 = 0.0;
+    const MAX: f64 = 1.0;
+    #[inline]
+    fn powi(self, n: i32) -> Self {
+        f64::powi(self, n)
+    }
+    #[inline]
+    fn sqrt(self) -> Self {
+        f64::sqrt(self)
+    }
+
+    #[inline]
+    fn abs(self) -> Self {
+        f64::abs(self)
+    }
+    #[inline]
+    fn floor(self) -> Self {
+        f64::floor(self)
+    }
+    #[inline]
+    fn as_i32(self) -> i32 {
+        self as i32
+    }
+    #[inline]
+    fn as_i64(self) -> i64 {
+        self as i64
+    }
+    #[inline]
+    fn default_points() -> [&'static Point<Self>; 4] {
+        [const { &Point { x: 0.0, y: 0.0 } }; 4]
+    }
+}
+
+
 
 pub enum Drawing<T: Number> {
     Point(Point<T>, Color32),

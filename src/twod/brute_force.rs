@@ -3,11 +3,11 @@ use super::*;
 pub struct BruteForce;
 
 impl<T: Number> ClosestPairAlgorithm<T> for BruteForce {
-    fn limit(&self,) -> usize {
-        10_000
-     }
     fn name(&self) -> &'static str {
         "brute force"
+    }
+    fn limit(&self) -> usize {
+        usize::MAX //10_000
     }
     fn execute<'a>(&self, points: &'a [Point<T>]) -> ClosestPair<'a, T> {
         let mut closest_pair = ClosestPair::euclidean(&points[0], &points[1]);

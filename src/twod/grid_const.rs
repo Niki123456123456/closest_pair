@@ -8,15 +8,15 @@ type Grid<'a, T> = HashMap<CellKey, Cell<&'a Point<T>>>;
 
 #[derive(Eq, Hash, PartialEq, Default, Clone)]
 struct CellKey {
-    pub x: i32,
-    pub y: i32,
+    pub x: i64,
+    pub y: i64,
 }
 
 impl CellKey {
     fn new<T : Number>(point: &Point<T>, radius: T) -> Self {
         Self {
-            x: (point.x / radius).floor().as_i32(),
-            y: (point.y / radius).floor().as_i32(),
+            x: (point.x / radius).floor().as_i64(),
+            y: (point.y / radius).floor().as_i64(),
         }
     }
 
@@ -50,6 +50,9 @@ impl<T : Number + 'static> ClosestPairAlgorithm<T> for GridAlgorithmConst {
     fn name(&self) -> &'static str {
         "grid const"
     }
+    fn limit(&self) -> usize {
+        usize::MAX
+    }
     fn execute<'a>(&self, points: &'a [Point<T>]) -> ClosestPair<'a, T> {
         let total_len = points.len();
         let mut closest_pair = ClosestPair::euclidean(&points[0], &points[1]);
@@ -80,10 +83,6 @@ impl<T : Number + 'static> ClosestPairAlgorithm<T> for GridAlgorithmConst {
 
     fn drawings<'a>(&self, _points: &'a [Point<T>]) -> Vec<Vec<Drawing<T>>> {
         vec![]
-    }
-
-    fn limit(&self) -> usize {
-        10_000_000
     }
 }
 

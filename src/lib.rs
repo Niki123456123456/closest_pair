@@ -3,3 +3,4 @@ mod twod;
 mod app;
 mod nd;
 pub use app::App;
+pub use twod::*;

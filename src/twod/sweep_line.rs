@@ -6,7 +6,7 @@ pub struct SweepLine;
 
 impl<T: Number> ClosestPairAlgorithm<T> for SweepLine {
     fn limit(&self,) -> usize {
-        10_000_000
+        usize::MAX
      }
     fn name(&self) -> &'static str {
         "sweep line"
