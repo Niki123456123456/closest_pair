@@ -2,17 +2,17 @@ use super::*;
 
 pub struct DivideAndConquer;
 
-impl ClosestPairAlgorithm for DivideAndConquer {
+impl<T: Number> ClosestPairAlgorithm<T> for DivideAndConquer {
     fn name(&self) -> &'static str {
         "divide and conquer"
     }
-    fn execute<'a>(&self, points: &'a [Point]) -> ClosestPair<'a> {
+    fn execute<'a>(&self, points: &'a [Point<T>]) -> ClosestPair<'a,T> {
         let mut points_sorted_x: Vec<_> = points.iter().collect();
         points_sorted_x.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
         return closest_pair_recursive(&points_sorted_x);
     }
 
-    fn drawings<'a>(&self, points: &'a [Point]) -> Vec<Vec<Drawing>> {
+    fn drawings<'a>(&self, points: &'a [Point<T>]) -> Vec<Vec<Drawing<T>>> {
         let mut points_sorted_x: Vec<_> = points.iter().collect();
         points_sorted_x.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
         return closest_pair_recursive_draw(&points_sorted_x).1;
@@ -22,7 +22,7 @@ impl ClosestPairAlgorithm for DivideAndConquer {
      }
 }
 
-fn closest_pair_recursive_draw<'a>(points_sorted_x: &[&'a Point]) -> (ClosestPair<'a>, Vec<Vec<Drawing>>) {
+fn closest_pair_recursive_draw<'a, T: Number>(points_sorted_x: &[&'a Point<T>]) -> (ClosestPair<'a, T>, Vec<Vec<Drawing<T>>>) {
     if points_sorted_x.len() == 2 {
         return (ClosestPair::euclidean(&points_sorted_x[0], &points_sorted_x[1]), vec![]);
     } else if points_sorted_x.len() == 3 {
@@ -62,18 +62,18 @@ fn closest_pair_recursive_draw<'a>(points_sorted_x: &[&'a Point]) -> (ClosestPai
         Color32::RED,
     ));
     current_drawing.push(Drawing::Line(
-        Point::new(mid_point.x, 0.0),
-        Point::new(mid_point.x, 1.0),
+        Point::new(mid_point.x, T::MIN),
+        Point::new(mid_point.x, T::MAX),
         Color32::GREEN,
     ));
     current_drawing.push(Drawing::Line(
-        Point::new(points_sorted_x[0].x, 0.0),
-        Point::new(points_sorted_x[0].x, 1.0),
+        Point::new(points_sorted_x[0].x, T::MIN),
+        Point::new(points_sorted_x[0].x, T::MAX),
         Color32::GREEN,
     ));
     current_drawing.push(Drawing::Line(
-        Point::new(points_sorted_x[points_sorted_x.len()-1].x, 0.0),
-        Point::new(points_sorted_x[points_sorted_x.len()-1].x, 1.0),
+        Point::new(points_sorted_x[points_sorted_x.len()-1].x, T::MIN),
+        Point::new(points_sorted_x[points_sorted_x.len()-1].x, T::MAX),
         Color32::GREEN,
     ));
 
@@ -94,7 +94,7 @@ fn closest_pair_recursive_draw<'a>(points_sorted_x: &[&'a Point]) -> (ClosestPai
 }
 
 
-fn closest_pair_recursive<'a>(points_sorted_x: &[&'a Point]) -> ClosestPair<'a> {
+fn closest_pair_recursive<'a, T : Number>(points_sorted_x: &[&'a Point<T>]) -> ClosestPair<'a,T> {
     if points_sorted_x.len() == 2 {
         return ClosestPair::euclidean(&points_sorted_x[0], &points_sorted_x[1]);
     } else if points_sorted_x.len() == 3 {
@@ -126,7 +126,7 @@ fn closest_pair_recursive<'a>(points_sorted_x: &[&'a Point]) -> ClosestPair<'a> 
     return strip_closest(&strip, d);
 }
 
-fn strip_closest<'a>(points: &[&'a Point], mut closest_pair: ClosestPair<'a>) -> ClosestPair<'a> {
+fn strip_closest<'a, T :Number>(points: &[&'a Point<T>], mut closest_pair: ClosestPair<'a,T>) -> ClosestPair<'a, T> {
     let mut points_sorted_y: Vec<_> = points.iter().collect();
     points_sorted_y.sort_by(|a, b| a.y.partial_cmp(&b.y).unwrap());
     for (i,&&point_a) in points_sorted_y.iter().enumerate() {

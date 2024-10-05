@@ -11,10 +11,10 @@ struct CellKey {
 }
 
 impl CellKey {
-    fn new(point: &Point, radius: f32) -> Self {
+    fn new<T : Number>(point: &Point<T>, radius: T) -> Self {
         Self {
-            x: (point.x / radius).floor() as i32,
-            y: (point.y / radius).floor() as i32,
+            x: (point.x / radius).floor().as_i32(),
+            y: (point.y / radius).floor().as_i32(),
         }
     }
 
@@ -32,13 +32,13 @@ impl CellKey {
     }
 }
 
-type Grid<'a> = HashMap<CellKey, Vec<&'a Point>>;
+type Grid<'a, T : Number> = HashMap<CellKey, Vec<&'a Point<T>>>;
 
-impl ClosestPairAlgorithm for GridAlgorithm {
+impl<T: Number> ClosestPairAlgorithm<T> for GridAlgorithm {
     fn name(&self) -> &'static str {
         "grid"
     }
-    fn execute<'a>(&self, points: &'a [Point]) -> ClosestPair<'a> {
+    fn execute<'a>(&self, points: &'a [Point<T>]) -> ClosestPair<'a,T> {
         let mut closest_pair = ClosestPair::euclidean(&points[0], &points[1]);
         let mut grid = create_grid(&points[..=1], closest_pair.distance);
 
@@ -65,7 +65,7 @@ impl ClosestPairAlgorithm for GridAlgorithm {
         return closest_pair;
     }
 
-    fn drawings<'a>(&self, points: &'a [Point]) -> Vec<Vec<Drawing>> {
+    fn drawings<'a>(&self, points: &'a [Point<T>]) -> Vec<Vec<Drawing<T>>> {
         let mut drawings = vec![];
 
         let mut closest_pair = ClosestPair::euclidean(&points[0], &points[1]);
@@ -84,18 +84,18 @@ impl ClosestPairAlgorithm for GridAlgorithm {
             {
                 let mut current_drawing = vec![];
                 let mut x = closest_pair.distance;
-                while x < 1.0 {
+                while x < T::MAX {
                     current_drawing.push(Drawing::Line(
-                        Point::new(x, 0.0),
-                        Point::new(x, 1.0),
+                        Point::new(x, T::MIN),
+                        Point::new(x, T::MAX),
                         Color32::WHITE,
                     ));
                     current_drawing.push(Drawing::Line(
-                        Point::new(0.0, x),
-                        Point::new(1.0, x),
+                        Point::new(T::MIN, x),
+                        Point::new(T::MAX, x),
                         Color32::WHITE,
                     ));
-                    x += closest_pair.distance;
+                    x = x + closest_pair.distance;
                 }
                 for (index, point) in points[0..=i].iter().enumerate() {
                     if index == i {
@@ -126,7 +126,7 @@ impl ClosestPairAlgorithm for GridAlgorithm {
     }
 }
 
-fn create_grid(points: &[Point], radius: f32) -> Grid<'_> {
+fn create_grid<T :Number>(points: &[Point<T>], radius: T) -> Grid<'_, T> {
     let mut grid = Grid::new();
     for point in points.iter() {
         let key = CellKey::new(point, radius);

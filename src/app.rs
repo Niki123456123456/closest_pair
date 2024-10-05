@@ -4,17 +4,17 @@ use crate::twod::*;
 
 pub struct AlgorithmResult {
     name: &'static str,
-    point_a: Point,
-    point_b: Point,
+    point_a: Point<f32>,
+    point_b: Point<f32>,
     distance: f32,
     duration: std::time::Duration,
-    drawings: Vec<Vec<Drawing>>,
+    drawings: Vec<Vec<Drawing<f32>>>,
     drawing_step: usize,
 }
 
 pub struct App {
     rng: rand::prelude::ThreadRng,
-    points: Vec<Point>,
+    points: Vec<Point<f32>>,
     results: Vec<AlgorithmResult>,
     len: usize,
     dark_mode: bool,
@@ -23,12 +23,12 @@ pub struct App {
 fn generate_points(
     rng: &mut rand::prelude::ThreadRng,
     len: usize,
-) -> (Vec<Point>, Vec<AlgorithmResult>) {
+) -> (Vec<Point<f32>>, Vec<AlgorithmResult>) {
     let mut points = vec![];
     for _ in 0..len {
         points.push(Point::ran(rng));
     }
-    let algorithms: Vec<Box<dyn ClosestPairAlgorithm>> = vec![
+    let algorithms: Vec<Box<dyn ClosestPairAlgorithm<f32>>> = vec![
         Box::new(BruteForce),
         Box::new(DivideAndConquer),
         Box::new(SweepLine),

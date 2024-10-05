@@ -4,32 +4,28 @@ use super::*;
 
 pub struct GridAlgorithmConst;
 
-type Grid<'a, T> = HashMap<CellKey, Cell<&'a Point<T>>>;
+type Grid<'a, const DIMENSION: usize> = HashMap<CellKey<DIMENSION>, Cell<&'a Point<DIMENSION>>>;
 
-#[derive(Eq, Hash, PartialEq, Default, Clone)]
-struct CellKey {
-    pub x: i32,
-    pub y: i32,
+#[derive(Eq, Hash, PartialEq, Clone)]
+struct CellKey<const DIMENSION: usize> {
+    pub coordinates : [i32; DIMENSION]
 }
 
-impl CellKey {
-    fn new<T : Number>(point: &Point<T>, radius: T) -> Self {
+impl<const DIMENSION: usize> CellKey<DIMENSION> {
+    fn new(point: &Point<DIMENSION>, radius: f32) -> Self {
+        let mut coordinates  = [0; DIMENSION];
+        for (i,coordinate) in point.coordinates.iter().enumerate() {
+            coordinates[i] = (coordinate / radius).floor() as i32;
+        }
         Self {
-            x: (point.x / radius).floor().as_i32(),
-            y: (point.y / radius).floor().as_i32(),
+            coordinates
         }
     }
 
-    fn nearbys(&self) -> [Self; 9] {
+    fn nearbys(&self) -> Vec<Self> {
         let radius = 1;
-        let mut nearbys = [const { Self { x: 0, y: 0 } }; 9];
+        let mut nearbys = vec![];
         let mut i = 0;
-        for x in self.x.wrapping_sub(radius)..=self.x.wrapping_add(radius) {
-            for y in self.y.wrapping_sub(radius)..=self.y.wrapping_add(radius) {
-                nearbys[i] = CellKey { x, y };
-                i += 1;
-            }
-        }
         return nearbys;
     }
 }
@@ -46,11 +42,8 @@ impl<T> Cell<T> {
     }
 }
 
-impl<T : Number + 'static> ClosestPairAlgorithm<T> for GridAlgorithmConst {
-    fn name(&self) -> &'static str {
-        "grid const"
-    }
-    fn execute<'a>(&self, points: &'a [Point<T>]) -> ClosestPair<'a, T> {
+impl ClosestPairAlgorithm for GridAlgorithmConst {
+    fn execute<'a, const DIMENSION: usize>(&self, points: &'a[Point<DIMENSION>]) -> ClosestPair<'a, DIMENSION> {
         let total_len = points.len();
         let mut closest_pair = ClosestPair::euclidean(&points[0], &points[1]);
         let mut grid = create_grid(&points[..=1], closest_pair.distance, total_len);
@@ -71,27 +64,19 @@ impl<T : Number + 'static> ClosestPairAlgorithm<T> for GridAlgorithmConst {
                 closest_pair = current_pair.unwrap();
                 grid = create_grid(&points[..=i], closest_pair.distance, total_len);
             } else {
-                grid.entry(key).or_insert(Cell { points: T::default_points(), size: 0 }).push(point);
+                grid.entry(key).or_insert(Cell { points: [const { &Point { coordinates: [0.0; DIMENSION] } }; 4], size: 0 }).push(point);
             }
         }
 
         return closest_pair;
     }
-
-    fn drawings<'a>(&self, _points: &'a [Point<T>]) -> Vec<Vec<Drawing<T>>> {
-        vec![]
-    }
-
-    fn limit(&self) -> usize {
-        10_000_000
-    }
 }
 
-fn create_grid<T : Number + 'static>(points: &[Point<T>], radius: T, total_len : usize) -> Grid<'_, T> {
+fn create_grid<const DIMENSION: usize>(points: &[Point<DIMENSION>], radius: f32, total_len : usize) -> Grid<'_, DIMENSION> {
     let mut grid = Grid::with_capacity(total_len);
     for point in points.iter() {
         let key = CellKey::new(point, radius);
-        grid.entry(key).or_insert(Cell { points: T::default_points(), size: 0 }).push(point);
+        grid.entry(key).or_insert(Cell { points: [const { &Point { coordinates: [0.0; DIMENSION] } }; 4], size: 0 }).push(point);
     }
     return grid;
 }
