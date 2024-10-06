@@ -58,7 +58,7 @@ impl Bench {
                 ui.add(egui::Slider::new(&mut self.settings.max_size, 2..=30).text("size"));
                 ui.label(print_thousands(2_i64.pow(self.settings.max_size as u32)))
             });
-            ui.add(egui::Slider::new(&mut self.settings.repeat, 1..=10).text("repeat"));
+            ui.add(egui::Slider::new(&mut self.settings.repeat, 1..=100).text("repeat"));
 
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.settings.number, Number::F32, "f32");
@@ -99,13 +99,50 @@ impl Bench {
                         });
                     }
     
-                    {
-                        let results = self.results.lock();
-                        if results.1 == false {
-                            ui.spinner();
-                        }
+                    
+                }
+            
+                {
+                    let results = self.results.lock();
+                    if results.1 == false {
+                        ui.spinner();
                     }
                 }
+
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    if ui.button("copy results").clicked() {
+                        let results = self.results.lock();
+                        let mut lines = vec![];
+                        let mut i = 0;
+                        let mut titles : Vec<_> = results.0.iter().map(|x|x.name).collect();
+                        titles.insert(0, "number of points");
+                        lines.push(titles.join("	"));
+                        loop {
+                            let mut cells = vec![];
+                            let mut break_loop = true;
+                            for (i2,result) in results.0.iter().enumerate(){
+                                if let Some(x) = result.observations.get(i) {
+                                    if i2 == 0 {
+                                        cells.push(x.1.to_string());
+                                    }
+                                    cells.push(x.2.as_nanos().to_string());
+                                    break_loop = false;
+                                } else {
+                                    cells.push("".to_string());
+                                }
+                            }
+                            lines.push(cells.join("	"));
+                            if break_loop {
+                                break;
+                            }
+                            i += 1;
+                        }
+                        let mut ctx: clipboard::ClipboardContext = clipboard::ClipboardProvider::new().unwrap();
+                        clipboard::ClipboardProvider::set_contents(&mut ctx, lines.join("\n")).unwrap();
+                    }
+                }
+                
             });
 
             let mut lines = vec![];
