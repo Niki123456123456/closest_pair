@@ -2,5 +2,6 @@
 mod twod;
 mod app;
 mod nd;
+mod bench;
 pub use app::App;
 pub use twod::*;

@@ -10,6 +10,7 @@ pub struct AlgorithmResult {
     duration: std::time::Duration,
     drawings: Vec<Vec<Drawing<f32>>>,
     drawing_step: usize,
+   
 }
 
 pub struct App {
@@ -18,6 +19,7 @@ pub struct App {
     results: Vec<AlgorithmResult>,
     len: usize,
     dark_mode: bool,
+    bench : crate::bench::Bench,
 }
 
 fn generate_points(
@@ -62,6 +64,7 @@ fn generate_points(
             duration,
             drawings,
             drawing_step: 0,
+            
         });
     }
 
@@ -80,6 +83,7 @@ impl Default for App {
             results,
             len,
             dark_mode: true,
+            bench: crate::bench::Bench::new(),
         }
     }
 }
@@ -163,6 +167,8 @@ impl eframe::App for App {
                 show_drawings(ui, result, size, self.dark_mode);
             });
         }
+
+        self.bench.ui(ctx);
     }
 }
 
