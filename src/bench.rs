@@ -5,6 +5,7 @@ use crate::{
 use egui::mutex::Mutex;
 use rand::{distributions::Standard, prelude::Distribution};
 use std::fmt::Debug;
+use std::sync::Arc;
 #[derive(PartialEq, Clone)]
 pub enum Number {
     F32,
@@ -69,7 +70,7 @@ impl Bench {
                     self.results = Arc::new(Mutex::new((vec![], false)));
                     let results = self.results.clone();
                     let settings = self.settings.clone();
-                    execute(async move {
+                    execute(move|| {
                         match settings.number {
                             Number::F32 => {
                                 bench::<f32>(&settings, results);
@@ -188,11 +189,11 @@ where
     return points;
 }
 
-use std::{future::Future, sync::Arc};
+
 
 #[cfg(not(target_arch = "wasm32"))]
-fn execute<F: Future<Output = ()> + Send + 'static>(f: F) {
-    std::thread::spawn(move || futures::executor::block_on(f));
+fn execute<F: FnOnce() + Send + 'static>(f: F) {
+    std::thread::spawn(f);
 }
 #[cfg(target_arch = "wasm32")]
 fn execute<F: Future<Output = ()> + 'static>(f: F) {
