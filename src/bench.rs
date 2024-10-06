@@ -20,7 +20,7 @@ pub struct Settings {
 }
 pub struct Result {
     pub name: &'static str,
-    pub observations: Vec<(usize, std::time::Duration)>,
+    pub observations: Vec<(usize,usize, std::time::Duration)>,
 }
 pub struct Bench {
     pub settings: Settings,
@@ -93,7 +93,7 @@ impl Bench {
             {
                 let results = self.results.lock();
                 let line : Vec<_> =  results.0.iter().map(|x| {
-                    let circle_points: egui_plot::PlotPoints = x.observations.iter().map(|x| [x.0 as f64, x.1.as_micros() as f64 / x.0 as f64]).collect();
+                    let circle_points: egui_plot::PlotPoints = x.observations.iter().map(|x| [x.1 as f64, x.2.as_micros() as f64 / x.0 as f64]).collect();
                     return egui_plot::Line::new(circle_points)
                     .name(x.name);
                 }).collect();
@@ -127,7 +127,7 @@ fn bench<T: twod::Number + Debug + 'static>(
     ];
     algorithms = algorithms
         .into_iter()
-        .filter(|x| settings.algorithms.iter().any(|a| a.0 == x.name()))
+        .filter(|x| settings.algorithms.iter().any(|a| a.0 == x.name() && a.1))
         .collect();
     {
         let mut results = results.lock();
@@ -139,7 +139,7 @@ fn bench<T: twod::Number + Debug + 'static>(
         }
     }
 
-    for size in 2..settings.max_size {
+    for size in 2..=settings.max_size {
         let len = 2_usize.pow(size as u32);
         let points = generate_points::<T>(len, &mut rng);
 
@@ -159,7 +159,7 @@ fn bench<T: twod::Number + Debug + 'static>(
             {
                 let mut results = results.lock();
                 if let Some(results) = results.0.get_mut(i) {
-                    results.observations.push((len, duration));
+                    results.observations.push((len,size, duration));
                 }
             }
         }
@@ -168,6 +168,7 @@ fn bench<T: twod::Number + Debug + 'static>(
     {
         let mut results = results.lock();
         results.1 = true;
+        print!("ready");
     }
 }
 
