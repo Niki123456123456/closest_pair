@@ -5,15 +5,20 @@ use super::*;
 pub struct SweepLine;
 
 impl<T: Number> ClosestPairAlgorithm<T> for SweepLine {
-    fn limit(&self,) -> usize {
+    fn limit(&self) -> usize {
         usize::MAX
-     }
+    }
     fn name(&self) -> &'static str {
         "sweep line"
     }
     fn execute<'a>(&self, points: &'a [Point<T>]) -> ClosestPair<'a, T> {
         let mut points_sorted_x: Vec<_> = points.iter().collect();
-        points_sorted_x.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
+        points_sorted_x.sort_by(|a, b| {
+            if a.x == b.x {
+                return a.y.partial_cmp(&b.y).unwrap();
+            }
+            return a.x.partial_cmp(&b.x).unwrap();
+        });
 
         let mut closest_pair = ClosestPair::euclidean(&points_sorted_x[0], &points_sorted_x[1]);
         let mut set: BTreeSet<&Point<T>> = BTreeSet::new();
@@ -21,7 +26,7 @@ impl<T: Number> ClosestPairAlgorithm<T> for SweepLine {
         set.insert(&points_sorted_x[1]);
 
         let mut j = 0;
-        for (i,&point) in points_sorted_x.iter().enumerate().skip(2) {
+        for (i, &point) in points_sorted_x.iter().enumerate().skip(2) {
             loop {
                 if j >= i {
                     break;
@@ -33,8 +38,8 @@ impl<T: Number> ClosestPairAlgorithm<T> for SweepLine {
                 j += 1;
             }
 
-            let lower_bound = Point::new( T::MIN, point.y - closest_pair.distance);
-            let upper_bound = Point::new( T::MAX, point.y + closest_pair.distance);
+            let lower_bound = Point::new(T::MIN, point.y - closest_pair.distance);
+            let upper_bound = Point::new(T::MAX, point.y + closest_pair.distance);
             let range = set.range(lower_bound..=upper_bound);
             for point_b in range {
                 let current_pair = ClosestPair::euclidean(point, point_b);
@@ -44,13 +49,13 @@ impl<T: Number> ClosestPairAlgorithm<T> for SweepLine {
             }
             set.insert(point);
         }
-        
+
         return closest_pair;
     }
 
     fn drawings<'a>(&self, points: &'a [Point<T>]) -> Vec<Vec<Drawing<T>>> {
         let mut drawings = vec![];
-       
+
         let mut points_sorted_x: Vec<_> = points.iter().collect();
         points_sorted_x.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
 
@@ -60,7 +65,7 @@ impl<T: Number> ClosestPairAlgorithm<T> for SweepLine {
         set.insert(&points_sorted_x[1]);
 
         let mut j = 0;
-        for (i,&point) in points_sorted_x.iter().enumerate().skip(2) {
+        for (i, &point) in points_sorted_x.iter().enumerate().skip(2) {
             loop {
                 if j >= i {
                     break;
@@ -72,11 +77,8 @@ impl<T: Number> ClosestPairAlgorithm<T> for SweepLine {
                 j += 1;
             }
 
-           
-           
-
-            let lower_bound = Point::new( T::MIN, point.y - closest_pair.distance);
-            let upper_bound = Point::new( T::MAX, point.y + closest_pair.distance);
+            let lower_bound = Point::new(T::MIN, point.y - closest_pair.distance);
+            let upper_bound = Point::new(T::MAX, point.y + closest_pair.distance);
 
             let mut current_drawing = vec![];
             current_drawing.push(Drawing::Line(
@@ -90,18 +92,24 @@ impl<T: Number> ClosestPairAlgorithm<T> for SweepLine {
                 Color32::GREEN,
             ));
             current_drawing.push(Drawing::Line(
-                Point::new(points_sorted_x[j.min(points_sorted_x.len()-1)].x, T::MIN),
-                Point::new(points_sorted_x[j.min(points_sorted_x.len()-1)].x, T::MAX),
+                Point::new(points_sorted_x[j.min(points_sorted_x.len() - 1)].x, T::MIN),
+                Point::new(points_sorted_x[j.min(points_sorted_x.len() - 1)].x, T::MAX),
                 Color32::GREEN,
             ));
             current_drawing.push(Drawing::Line(
                 Point::new(point.x, point.y - closest_pair.distance),
-                Point::new(points_sorted_x[j.min(points_sorted_x.len()-1)].x, point.y - closest_pair.distance),
+                Point::new(
+                    points_sorted_x[j.min(points_sorted_x.len() - 1)].x,
+                    point.y - closest_pair.distance,
+                ),
                 Color32::GREEN,
             ));
             current_drawing.push(Drawing::Line(
                 Point::new(point.x, point.y + closest_pair.distance),
-                Point::new(points_sorted_x[j.min(points_sorted_x.len()-1)].x, point.y + closest_pair.distance),
+                Point::new(
+                    points_sorted_x[j.min(points_sorted_x.len() - 1)].x,
+                    point.y + closest_pair.distance,
+                ),
                 Color32::GREEN,
             ));
             for point in points.iter() {
@@ -115,12 +123,9 @@ impl<T: Number> ClosestPairAlgorithm<T> for SweepLine {
                     closest_pair = current_pair;
                 }
             }
-            
-           
 
             set.insert(point);
         }
-        
 
         return drawings;
     }

@@ -19,7 +19,7 @@ impl<T: Number> ClosestPairAlgorithm<T> for DivideAndConquerPresortedY {
         return closest_pair_recursive(&points_sorted_x, &points_sorted_y);
     }
 
-    fn drawings<'a>(&self, points: &'a [Point<T>]) -> Vec<Vec<Drawing<T>>> {
+    fn drawings<'a>(&self, _: &'a [Point<T>]) -> Vec<Vec<Drawing<T>>> {
        return vec![];
     }
 }
@@ -42,8 +42,8 @@ fn closest_pair_recursive<'a, T: Number>(points_sorted_x: &[&'a Point<T>], point
     let mid_point = points_sorted_x[mid];
 
     let (left_points, right_points) = points_sorted_x.split_at(mid);
-    let mut left_points_y = vec![];
-    let mut right_points_y = vec![];
+    let mut left_points_y = Vec::with_capacity(mid);
+    let mut right_points_y = Vec::with_capacity(mid);
     for &point in points_sorted_y.iter() {
         let push_left = point.x < mid_point.x || (point.x == mid_point.x && point.y < mid_point.y);
         if push_left {
