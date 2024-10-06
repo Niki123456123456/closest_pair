@@ -54,7 +54,7 @@ impl Bench {
                 ui.checkbox(enabled, *name);
             }
             ui.horizontal(|ui| {
-                ui.add(egui::Slider::new(&mut self.settings.max_size, 2..=25).text("size"));
+                ui.add(egui::Slider::new(&mut self.settings.max_size, 2..=30).text("size"));
                 ui.label(print_thousands(2_i64.pow(self.settings.max_size as u32)))
             });
             ui.add(egui::Slider::new(&mut self.settings.repeat, 1..=10).text("repeat"));
@@ -100,7 +100,12 @@ impl Bench {
                 lines = line;
             }
 
-            egui_plot::Plot::new("bench").legend(egui_plot::Legend::default()).show(ui, |plot_ui| {
+            egui_plot::Plot::new("bench").label_formatter(|name, value| {
+                let power = (value.x.floor() as u32);
+                let count = 2_usize.pow(power);
+                let duration = value.y;
+                return format!("{name}\nnumber of points: 2^{power} = {count} \nduration per point: {duration:.2}ms");
+            }).legend(egui_plot::Legend::default()).show(ui, |plot_ui| {
                 for line in lines {
                     plot_ui.line(line);
                 }
