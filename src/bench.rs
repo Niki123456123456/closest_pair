@@ -70,16 +70,34 @@ impl Bench {
                     self.results = Arc::new(Mutex::new((vec![], false)));
                     let results = self.results.clone();
                     let settings = self.settings.clone();
-                    execute(move|| {
-                        match settings.number {
-                            Number::F32 => {
-                                bench::<f32>(&settings, results);
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        execute(move|| {
+                            match settings.number {
+                                Number::F32 => {
+                                    bench::<f32>(&settings, results);
+                                }
+                                Number::F64 => {
+                                    bench::<f64>(&settings, results);
+                                }
                             }
-                            Number::F64 => {
-                                bench::<f64>(&settings, results);
+                        });
+                    }
+                    
+                    #[cfg(target_arch = "wasm32")]
+                    {
+                        execute(async move {
+                            match settings.number {
+                                Number::F32 => {
+                                    bench::<f32>(&settings, results);
+                                }
+                                Number::F64 => {
+                                    bench::<f64>(&settings, results);
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
     
                     {
                         let results = self.results.lock();
@@ -195,8 +213,9 @@ where
 fn execute<F: FnOnce() + Send + 'static>(f: F) {
     std::thread::spawn(f);
 }
+
 #[cfg(target_arch = "wasm32")]
-fn execute<F: Future<Output = ()> + 'static>(f: F) {
+fn execute<F: std::future::Future<Output = ()> + 'static>(f: F) {
     wasm_bindgen_futures::spawn_local(f);
 }
 
