@@ -1,6 +1,6 @@
 # closest pair
 
-This to a repo to compare different algorithms that find the closest pair in a set of points.
+This repo compares different algorithms that find the closest pair in a set of points.
 
 ## preliminary results
 <img src="./preliminary_results.svg">
