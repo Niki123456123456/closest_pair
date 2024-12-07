@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 
 use egui::Color32;
 use rand::{distributions::Standard, prelude::Distribution, Rng};
@@ -96,9 +96,10 @@ pub fn euclidean_distance<T: Number>(point_a: &Point<T>, point_b: &Point<T>) -> 
     ((point_a.x - point_b.x).powi(2) + (point_a.y - point_b.y).powi(2)).sqrt()
 }
 
-pub trait Number: Add<Output = Self> + Sub<Output = Self> + Div<Output = Self> + PartialOrd + Sized + Copy + Default {
+pub trait Number: Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + PartialOrd + Sized + Copy + Default {
     const MIN: Self;
     const MAX: Self;
+    const CENTER: Self;
    
     fn powi(self, n: i32) -> Self;
     fn sqrt(self) -> Self;
@@ -106,12 +107,14 @@ pub trait Number: Add<Output = Self> + Sub<Output = Self> + Div<Output = Self> +
     fn floor(self) -> Self;
     fn as_i32(self) -> i32;
     fn as_i64(self) -> i64;
+    fn from_usize(n : usize) -> Self;
     fn default_points() -> [&'static Point<Self>; 4];
 }
 
 impl Number for f32 {
     const MIN: f32 = 0.0;
     const MAX: f32 = 1.0;
+    const CENTER: f32 = 0.5;
     #[inline]
     fn powi(self, n: i32) -> Self {
         f32::powi(self, n)
@@ -141,11 +144,16 @@ impl Number for f32 {
     fn default_points() -> [&'static Point<Self>; 4] {
         [const { &Point { x: 0.0, y: 0.0 } }; 4]
     }
+    
+    fn from_usize(n : usize) -> Self {
+        n as Self
+    }
 }
 
 impl Number for f64 {
     const MIN: f64 = 0.0;
     const MAX: f64 = 1.0;
+    const CENTER: f64 = 0.5;
     #[inline]
     fn powi(self, n: i32) -> Self {
         f64::powi(self, n)
@@ -174,6 +182,9 @@ impl Number for f64 {
     #[inline]
     fn default_points() -> [&'static Point<Self>; 4] {
         [const { &Point { x: 0.0, y: 0.0 } }; 4]
+    }
+    fn from_usize(n : usize) -> Self {
+        n as Self
     }
 }
 

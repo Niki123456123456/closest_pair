@@ -3,7 +3,10 @@ use crate::{
     GridAlgorithm, GridAlgorithmConst, Point, SweepLine,
 };
 use egui::mutex::Mutex;
+use rand::Rng;
 use rand::{distributions::Standard, prelude::Distribution};
+use strum::IntoEnumIterator;
+use strum_macros::{AsRefStr, EnumIter, EnumString};
 use std::fmt::Debug;
 use std::sync::Arc;
 #[derive(PartialEq, Clone)]
@@ -15,12 +18,13 @@ pub enum Number {
 #[derive(Clone)]
 pub struct Settings {
     pub algorithms: Vec<(&'static str, bool)>,
+    pub generations: Vec<(PointDistribution, bool)>,
     pub max_size: usize,
     pub repeat: usize,
     pub number: Number,
 }
 pub struct Result {
-    pub name: &'static str,
+    pub name: String,
     pub observations: Vec<(usize,usize, std::time::Duration)>,
 }
 pub struct Bench {
@@ -41,6 +45,7 @@ impl Bench {
         Self {
             settings: Settings {
                 algorithms: algorithms.iter().map(|x| (x.name(), true)).collect(),
+                generations: PointDistribution::iter().map(|x| (x, x == PointDistribution::Evenly)).collect(),
                 max_size: 10,
                 number: Number::F32,
                 repeat: 1,
@@ -53,6 +58,9 @@ impl Bench {
         egui::Window::new("bench").show(ctx, |ui| {
             for (name, enabled) in &mut self.settings.algorithms {
                 ui.checkbox(enabled, *name);
+            }
+            for (name, enabled) in &mut self.settings.generations {
+                ui.checkbox(enabled, name.as_ref());
             }
             ui.horizontal(|ui| {
                 ui.add(egui::Slider::new(&mut self.settings.max_size, 2..=30).text("size"));
@@ -115,8 +123,8 @@ impl Bench {
                         let results = self.results.lock();
                         let mut lines = vec![];
                         let mut i = 0;
-                        let mut titles : Vec<_> = results.0.iter().map(|x|x.name).collect();
-                        titles.insert(0, "number of points");
+                        let mut titles : Vec<_> = results.0.iter().map(|x|x.name.to_string()).collect();
+                        titles.insert(0, "number of points".to_string());
                         lines.push(titles.join("	"));
                         loop {
                             let mut cells = vec![];
@@ -151,7 +159,7 @@ impl Bench {
                 let line : Vec<_> =  results.0.iter().map(|x| {
                     let circle_points: egui_plot::PlotPoints = x.observations.iter().map(|x| [x.1 as f64, x.2.as_micros() as f64 / x.0 as f64]).collect();
                     return egui_plot::Line::new(circle_points)
-                    .name(x.name);
+                    .name(x.name.to_string());
                 }).collect();
                 lines = line;
             }
@@ -190,40 +198,41 @@ fn bench<T: twod::Number + Debug + 'static>(
         .into_iter()
         .filter(|x| settings.algorithms.iter().any(|a| a.0 == x.name() && a.1))
         .collect();
-    {
-        let mut results = results.lock();
-        for algo in algorithms.iter() {
-            results.0.push(Result {
-                name: algo.name(),
-                observations: vec![],
-            });
-        }
-    }
-
+    
     for size in 2..=settings.max_size {
         let len = 2_usize.pow(size as u32);
-        let points = generate_points::<T>(len, &mut rng);
+        for setting in settings.generations.iter().filter(|x| x.1) {
+            let points = generate_points::<T>(len, setting.0, &mut rng);
 
-        for (i, algo) in algorithms.iter().enumerate() {
-            let mut durations = vec![];
-            let mut distance = T::MIN;
-            for _ in 0..settings.repeat {
-                let start = web_time::Instant::now();
-                let result = algo.execute(&points);
-                let duration: std::time::Duration = start.elapsed();
-                distance = result.distance;
-                durations.push(duration);
-            }
-            let duration: std::time::Duration =
-                durations.iter().sum::<std::time::Duration>() / settings.repeat as u32;
+            for (i, algo) in algorithms.iter().enumerate() {
+                let mut durations = vec![];
+                let mut distance = T::MIN;
+                for _ in 0..settings.repeat {
+                    let start = web_time::Instant::now();
+                    let result = algo.execute(&points);
+                    let duration: std::time::Duration = start.elapsed();
+                    distance = result.distance;
+                    durations.push(duration);
+                }
+                let duration: std::time::Duration =
+                    durations.iter().sum::<std::time::Duration>() / settings.repeat as u32;
 
-            {
-                let mut results = results.lock();
-                if let Some(results) = results.0.get_mut(i) {
-                    results.observations.push((len,size, duration));
+                {
+                    let name = format!("{}_{:?}", algo.name() , setting.0);
+                    let mut results = results.lock();
+                    if results.0.iter().enumerate().filter(|x|x.1.name == name).next().is_none() {
+                        results.0.push(Result {
+                            name: name.to_string(),
+                            observations: vec![],
+                        });
+                    }
+                    if let Some(results) = results.0.iter_mut().filter(|x|x.name == name).next() {
+                        results.observations.push((len,size, duration));
+                    }
                 }
             }
         }
+        
     }
 
     {
@@ -232,14 +241,29 @@ fn bench<T: twod::Number + Debug + 'static>(
         print!("ready");
     }
 }
+#[derive(PartialEq, Clone, Copy, EnumIter, EnumString, AsRefStr, Debug)]
+pub enum PointDistribution {
+    Horizontal,
+    Vertical,
+    Evenly,
+    IncreasingDistance,
+    DecreasingDistance,
+}
 
-fn generate_points<T: twod::Number>(len: usize, rng: &mut rand::prelude::ThreadRng) -> Vec<Point<T>>
+fn generate_points<T: twod::Number>(len: usize, distribution : PointDistribution, rng: &mut rand::prelude::ThreadRng) -> Vec<Point<T>>
 where
     Standard: Distribution<T>,
 {
     let mut points: Vec<Point<T>> = vec![];
-    for _ in 0..len {
-        points.push(Point::ran(rng));
+    for i in 0..len {
+        let p = match distribution {
+            PointDistribution::Horizontal => Point{ x: rng.gen(), y: T::CENTER },
+            PointDistribution::Vertical => Point{ x: T::CENTER, y: rng.gen() },
+            PointDistribution::Evenly => Point::ran(rng),
+            PointDistribution::IncreasingDistance =>Point{ x: T::CENTER, y:  T::MAX - (T::MAX / T::from_usize(len - i))  }, 
+            PointDistribution::DecreasingDistance => Point{ x: T::CENTER, y:  T::MAX / T::from_usize(i + 1)  },
+        };
+        points.push(p);
     }
     return points;
 }
