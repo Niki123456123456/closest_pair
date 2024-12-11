@@ -169,7 +169,7 @@ impl Bench {
                 let count = 2_usize.pow(power);
                 let duration = value.y;
                 return format!("{name}\nnumber of points: 2^{power} = {count} \nduration per point: {duration:.2}ms");
-            }).legend(egui_plot::Legend::default()).show(ui, |plot_ui| {
+            }).y_axis_label("duration per point in ms").x_axis_label("number of points").legend(egui_plot::Legend::default()).show(ui, |plot_ui| {
                 for line in lines {
                     plot_ui.line(line);
                 }
